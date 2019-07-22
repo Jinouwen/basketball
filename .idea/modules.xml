@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/basketball.iml" filepath="$PROJECT_DIR$/.idea/basketball.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../theano_mnist/.idea/theano_mnist.iml" filepath="$PROJECT_DIR$/../theano_mnist/.idea/theano_mnist.iml" />
+    </modules>
+  </component>
+</project>
