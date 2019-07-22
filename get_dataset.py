@@ -23,6 +23,7 @@ def onMouse(event,x,y,flags,param):
     elif event == cv.EVENT_LBUTTONUP:
         rect[2], rect[3] = x, y
 
+
 cv.namedWindow('frame')
 cv.setMouseCallback('frame',onMouse)
 
