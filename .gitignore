@@ -4,3 +4,8 @@
 *.mp4
 *.xml
 .idea/workspace.xml
+.idea/workspace.xml
+*.avi
+*.mov
+*.pkl
+*.pyc
