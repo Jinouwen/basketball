@@ -4,16 +4,25 @@ import numpy as np
 import pickle
 from matplotlib import  pyplot as plot
 from get_dataset import Data
+from hog import Hog
 
 data = Data()
 # data.prepare_data()
 pos_num, neg_num, row, col, pos_data, neg_data = data.load_data()
+if pos_data.ndim == 3:
+    pos_data = pos_data.reshape(*pos_data.shape,1)
+if neg_data.ndim == 3:
+    neg_data = neg_data.reshape(*neg_data.shape,1)
 print('...computing HOG')
 
-def cal_curve():
+def cal_curve(opt=0):
     arr = []
     for i in range(pos_num):
-        temp = hog.compute(pos_data[i])
+        if opt == 1:
+            print(i)
+            temp = my_hog.compute(pos_data[i])
+        else:
+            temp = hog.compute(pos_data[i])
         arr.append(temp.ravel())
     arr = np.array(arr)
     mean = np.mean(np.array(arr), axis=0)
@@ -22,7 +31,11 @@ def cal_curve():
     tot_num = tot.shape[0]
     arr = []
     for i in range(tot_num):
-        temp = hog.compute(tot[i])
+        if opt == 1:
+            print(i)
+            temp = my_hog.compute(tot[i])
+        else:
+            temp = hog.compute(tot[i])
         arr.append(temp.ravel())
     arr = np.array(arr)
     dis = []
@@ -59,10 +72,16 @@ def cal_curve():
 plot.title('ROC Curve')
 plot.xlabel('missed positive rate')
 plot.ylabel('False alarm rate')
-hog = cv.HOGDescriptor((row, col), (8, 8), (4, 4), (8, 8), 9, )
+
+hog = cv.HOGDescriptor((col, row), (8, 8), (4, 4), (8, 8), 9, )
 points1 = np.array(cal_curve())
-hog = cv.HOGDescriptor((row, col), (8, 8), (4, 4), (4, 4), 9, )
+hog = cv.HOGDescriptor((col, row), (8, 8), (4, 4), (4, 4), 9, )
 points2 = np.array(cal_curve())
+
+my_hog = Hog((row, col), (2, 2), (1, 1),(4, 4))
+points3 = np.array(cal_curve(opt=1))
 plot.plot(points1[0],points1[1],label='1')
 plot.plot(points2[0],points2[1],label='2')
+plot.plot(points3[0],points3[1],label='3')
+plot.legend()
 plot.show()
