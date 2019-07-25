@@ -55,7 +55,7 @@ class Data:
 
     def prepare_data(self):
         config = configparser.ConfigParser()
-        print('...loading from config.ini')
+        print('...loading from config.ini',)
         config.read('config.ini')
         video_type = config.get('data_set', 'video_type')
         video_name = config.get('data_set', video_type)
@@ -68,7 +68,7 @@ class Data:
         pause_flag = False
         rat, frame = cap.read()
         rect = [0,0,52,52]
-
+        print('done')
         def onMouse(event,x,y,flags,param):
             if event == cv.EVENT_LBUTTONUP:
                 rect[0], rect[1] = x, y
@@ -181,6 +181,72 @@ class Data:
         print('data saved')
         cv.destroyAllWindows()
 
+
+    def process_neg_data(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        dataset_name = '_' + config.get('data_set', 'dataset_name')[:-5]
+        with open('neg_data%s.pkl' % dataset_name,'rb') as f:
+            neg_data = pickle.load(f)
+        num = neg_data.shape[0]
+        index = 0
+        pause_flag = 0
+        def do_nothing(par):
+            pass
+        def onChange(par):
+            pass
+
+        label = np.zeros(num,dtype=np.int8)
+        cv.namedWindow('neg_data')
+        cv.createTrackbar('index', 'neg_data', 0, num-1, onChange)
+        font = cv.FONT_HERSHEY_SIMPLEX
+        delay = 3
+        while True:
+            bar_index = cv.getTrackbarPos('index','neg_data')
+            if index == num - 1:
+                pause_flag = 1
+
+            if index != bar_index:
+                index = bar_index
+            img = neg_data[index]
+            img = cv.resize(img,(img.shape[0]*14, img.shape[1]*14))
+            opt = cv.waitKey(delay) & 0xff
+            if opt == ord('q') :
+                break
+            elif opt == ord('s'):
+                pause_flag = not pause_flag
+            elif opt == ord('a'):
+                index = index - 1
+                cv.setTrackbarPos('index','neg_data',index)
+            elif opt == ord('d'):
+                index = index + 1
+                cv.setTrackbarPos('index','neg_data',index)
+            elif opt == ord('w'):
+                label[index] = 1 - label[index]
+
+            cv.putText(img,'index:%i' % index,(0,25),font,1,(255,255,255))
+            cv.putText(img,'label:%i' % label[index],(0,80),font,2,(255,255,255) if label[index] else (0,0,0),2)
+            cv.imshow('neg_data',img)
+
+            if not pause_flag:
+                cv.setTrackbarPos('index','neg_data',bar_index+1)
+        cv.destroyAllWindows()
+        print('%i interested data,%i uninterested data, save?(Y\\N)' % (
+            np.count_nonzero(label), num - np.count_nonzero(label)))
+        while True:
+            opt = input()
+            if opt == 'Y':
+                break
+            elif opt == 'N':
+                return
+        with open('neg_label%s.pkl' % dataset_name,'wb') as f:
+            pickle.dump(label,f)
+        with open('old_neg_data%s.pkl' % dataset_name,'wb') as f:
+            pickle.dump(neg_data,f)
+        with open('neg_data%s.pkl' % dataset_name,'wb') as f:
+            pickle.dump(neg_data[label == 1],f)
+
+
     def load_data(self):
         config = configparser.ConfigParser()
         config.read('config.ini')
@@ -200,11 +266,12 @@ class Data:
 
 if __name__ == '__main__':
     data = Data()
-    data.prepare_data2()
+    # data.process_neg_data()
     pos_num, neg_num, row, col, pos_data, neg_data = data.load_data()
-    print(pos_data.shape)
-    cv.imshow('img',pos_data[0])
-    cv.waitKey(0)
+    print(neg_data.shape)
+    for i in range(neg_num):
+        cv.imshow('img',neg_data[i])
+        cv.waitKey(0)
 
 
 
